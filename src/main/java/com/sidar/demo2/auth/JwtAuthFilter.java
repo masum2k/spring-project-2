@@ -37,6 +37,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // Bearer token kontrolü
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            // Token yoksa, authentication gerektiren endpoint'ler için 401 döndür
+            String requestURI = request.getRequestURI();
+            if (requestURI.startsWith("/api/books/") || requestURI.equals("/api/books")) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\": \"Authentication required\"}");
+                return;
+            }
             filterChain.doFilter(request, response);
             return;
         }

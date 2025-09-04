@@ -21,7 +21,7 @@ public class BookController {
 
     // TÜMÜ
     @GetMapping
-    public Page<Book> getBooks(@PageableDefault(size = 5, sort = "title") Pageable pageable) {
+    public Page<Book> getBooks(@PageableDefault(size = 10, sort = "id") Pageable pageable) {
         return bookService.getAllBooks(pageable);
     }
 

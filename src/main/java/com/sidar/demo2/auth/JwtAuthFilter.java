@@ -34,18 +34,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
+        final String requestURI = request.getRequestURI();
+
+        // Public endpoint kontrolü - Token gerektirmez
+        if (requestURI.startsWith("/api/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Bearer token kontrolü
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // Token yoksa, authentication gerektiren endpoint'ler için 401 döndür
-            String requestURI = request.getRequestURI();
-            if (requestURI.startsWith("/api/books/") || requestURI.equals("/api/books")) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"error\": \"Authentication required\"}");
-                return;
-            }
-            filterChain.doFilter(request, response);
-            return;
+            // Token yoksa tüm protected endpoint'ler için 401 döndür
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Authentication required\"}");
+            return; // ✅ Burada dur - filterChain.doFilter() çağırma!
         }
 
         // "Bearer " kısmını çıkar, sadece token'ı al
@@ -69,11 +72,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    // Token geçersizse 401 döndür
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Invalid token\"}");
+                    return;
                 }
             }
         } catch (Exception e) {
-            // Token parse edilemezse veya geçersizse, sadece filter chain'e devam et
+            // Token parse edilemezse 401 döndür
             logger.error("Cannot set user authentication: {}", e);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Authentication failed\"}");
+            return;
         }
 
         filterChain.doFilter(request, response);

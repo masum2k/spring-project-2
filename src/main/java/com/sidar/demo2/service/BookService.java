@@ -49,4 +49,8 @@ public class BookService {
         }
         bookRepository.deleteById(id);
     }
+
+    public long getTotalBookCount() {
+        return bookRepository.count();
+    }
 }

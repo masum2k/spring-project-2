@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -53,7 +55,6 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        // Kullanıcı kimlik doğrulaması yap
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -61,14 +62,16 @@ public class AuthService {
                 )
         );
 
-        // Kullanıcıyı bul
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // JWT token oluştur
+        // 🔹 Last login güncelle
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
+
         String token = jwtUtil.generateToken(user);
 
-        // Response döndür
         return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole().name());
     }
+
 }

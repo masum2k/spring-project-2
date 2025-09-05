@@ -2,6 +2,7 @@ package com.sidar.demo2.controller;
 
 import com.sidar.demo2.model.Book;
 import com.sidar.demo2.service.BookService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.sidar.demo2.dto.BookDto;
 import jakarta.validation.Valid;

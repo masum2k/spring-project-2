@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,12 +33,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String username;
         final String requestURI = request.getRequestURI();
+        final String method = request.getMethod();
 
-        log.debug("Processing request: {} {}", request.getMethod(), requestURI);
+        log.debug("Processing request: {} {}", method, requestURI);
+
+        // OPTIONS isteği (preflight) - direkt geçir
+        if (HttpMethod.OPTIONS.matches(method)) {
+            log.debug("OPTIONS request, skipping JWT validation");
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Public endpoint kontrolü - Token gerektirmez
         if (requestURI.startsWith("/api/auth/")) {
@@ -46,11 +52,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String username;
+
         // Bearer token kontrolü
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.debug("No Bearer token found for protected endpoint: {}", requestURI);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
             response.getWriter().write("{\"error\": \"Authentication required\", \"path\": \"" + requestURI + "\"}");
             return;
         }
@@ -87,6 +98,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     log.warn("Invalid token for user: {}", username);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
                     response.getWriter().write("{\"error\": \"Invalid token\"}");
                     return;
                 }
@@ -95,6 +107,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             log.error("Cannot set user authentication: ", e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
             response.getWriter().write("{\"error\": \"Authentication failed: " + e.getMessage() + "\"}");
             return;
         }

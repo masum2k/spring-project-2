@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // ✨ Method-level security aktif et
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -31,14 +31,22 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Books - Role bazlı yetkilendirme
-                        .requestMatchers(HttpMethod.GET, "/api/books/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/api/books/**").hasRole("LIBRARIAN")
-                        .requestMatchers(HttpMethod.PUT, "/api/books/**").hasRole("LIBRARIAN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasRole("LIBRARIAN")
+                        // Books - Hiyerarşik yetkilendirme
+                        .requestMatchers(HttpMethod.GET, "/api/books/**")
+                        .hasAnyRole("USER", "LIBRARIAN", "ADMIN", "SUPER_ADMIN")
 
-                        // Admin endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/books/**")
+                        .hasAnyRole("LIBRARIAN", "ADMIN", "SUPER_ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/books/**")
+                        .hasAnyRole("LIBRARIAN", "ADMIN", "SUPER_ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/books/**")
+                        .hasAnyRole("LIBRARIAN", "ADMIN", "SUPER_ADMIN")
+
+                        // Admin endpoints - Sadece admin ve üstü
+                        .requestMatchers("/api/admin/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                         .anyRequest().authenticated()
                 )

@@ -31,12 +31,10 @@ public class AuthService {
             throw new RuntimeException("Username already exists!");
         }
 
-        // Email zaten var mı kontrol et
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists!");
         }
 
-        // Yeni kullanıcı oluştur
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -44,13 +42,10 @@ public class AuthService {
                 .role(Role.USER) // Default olarak USER rolü ver
                 .build();
 
-        // Kullanıcıyı kaydet
         userRepository.save(user);
 
-        // JWT token oluştur
         String token = jwtUtil.generateToken(user);
 
-        // Response döndür
         return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole().name());
     }
 
@@ -65,7 +60,6 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // 🔹 Last login güncelle
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 

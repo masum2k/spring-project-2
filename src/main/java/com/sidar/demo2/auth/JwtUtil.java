@@ -22,10 +22,9 @@ public class JwtUtil {
     private final long refreshExpiration;
 
     public JwtUtil(@Value("${jwt.secret}") String secret,
-                   @Value("${jwt.expiration:3600000}") long jwtExpiration, // 1 saat (daha güvenli)
-                   @Value("${jwt.refresh.expiration:604800000}") long refreshExpiration) { // 7 gün
+                   @Value("${jwt.expiration:3600000}") long jwtExpiration,
+                   @Value("${jwt.refresh.expiration:604800000}") long refreshExpiration) {
 
-        // ✅ GÜVENLİK: Secret key uzunluk kontrolü
         if (secret.length() < 32) {
             throw new IllegalArgumentException("JWT secret must be at least 32 characters long");
         }
@@ -79,7 +78,6 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        // ✅ GÜVENLİK: Sadece gerekli bilgileri ekle
         claims.put("role", userDetails.getAuthorities().iterator().next().getAuthority());
         return createToken(claims, userDetails.getUsername());
     }

@@ -1,6 +1,5 @@
 package com.sidar.demo2.model;
 
-// Mevcut Role.java'yı şununla değiştir:
 public enum Role {
     USER("USER", "Basic user permissions"),
     LIBRARIAN("LIBRARIAN", "Can manage books and users"),

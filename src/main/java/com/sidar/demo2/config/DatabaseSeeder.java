@@ -43,7 +43,6 @@ public class DatabaseSeeder {
     }
 
     private void createSampleUsers() {
-        // Sample librarian
         if (!userRepository.existsByUsername("librarian")) {
             User librarian = User.builder()
                     .username("librarian")
@@ -56,7 +55,6 @@ public class DatabaseSeeder {
             log.info("📚 Sample librarian created: librarian / Librarian123!");
         }
 
-        // Sample admin
         if (!userRepository.existsByUsername("admin")) {
             User admin = User.builder()
                     .username("admin")

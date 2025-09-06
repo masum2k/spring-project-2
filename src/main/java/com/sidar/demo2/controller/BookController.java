@@ -20,25 +20,22 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    // TÜMÜ
     @GetMapping
     public Page<Book> getBooks(@PageableDefault(size = 10, sort = "id") Pageable pageable) {
         return bookService.getAllBooks(pageable);
     }
 
-    // ID İLE GETİR
     @GetMapping("/{id}")
     public Book getBookById(@PathVariable Long id) {
         return bookService.getBookById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found with id " + id));
     }
 
-    // SİL
     @DeleteMapping("/{id}")
     public void deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
     }
-    // YENİ EKLE
+
     @PostMapping
     public Book createBook(@Valid @RequestBody BookDto bookDto) {
         Book book = Book.builder()
@@ -49,7 +46,6 @@ public class BookController {
         return bookService.addBook(book);
     }
 
-    // GÜNCELLE
     @PutMapping("/{id}")
     public Book updateBook(@PathVariable Long id, @Valid @RequestBody BookDto bookDto) {
         Book book = Book.builder()

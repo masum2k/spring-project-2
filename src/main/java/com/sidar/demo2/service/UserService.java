@@ -23,13 +23,11 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    // Tüm kullanıcıları getir (Admin için)
     public Page<UserDto> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable)
                 .map(this::convertToDto);
     }
 
-    // Kullanıcı rolü değiştir
     @Transactional
     public void changeUserRole(Long userId, Role newRole) {
         User user = userRepository.findById(userId)
@@ -43,7 +41,6 @@ public class UserService {
                 user.getUsername(), oldRole, newRole, getCurrentUsername());
     }
 
-    // Kullanıcı durumunu değiştir (aktif/pasif)
     @Transactional
     public void changeUserStatus(Long userId, boolean active) {
         User user = userRepository.findById(userId)
@@ -56,7 +53,6 @@ public class UserService {
                 user.getUsername(), active ? "ACTIVE" : "INACTIVE", getCurrentUsername());
     }
 
-    // İstatistikler için
     public long getTotalUserCount() {
         return userRepository.count();
     }
@@ -70,33 +66,28 @@ public class UserService {
         return userRepository.countByCreatedAtAfter(startOfDay);
     }
 
-    // Username ile kullanıcı bul
     public UserDto findByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
         return convertToDto(user);
     }
 
-    // Email ile kullanıcı bul
     public UserDto findByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         return convertToDto(user);
     }
 
-    // Kullanıcıyı role göre filtrele
     public Page<UserDto> getUsersByRole(Role role, Pageable pageable) {
         return userRepository.findByRole(role, pageable)
                 .map(this::convertToDto);
     }
 
-    // Aktif kullanıcıları getir
     public Page<UserDto> getActiveUsers(Pageable pageable) {
         return userRepository.findByActiveTrue(pageable)
                 .map(this::convertToDto);
     }
 
-    // User'ı DTO'ya çevir (Şifreyi gizle)
     private UserDto convertToDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
@@ -110,13 +101,11 @@ public class UserService {
                 .build();
     }
 
-    // Şu anki kullanıcıyı al
     private String getCurrentUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null ? auth.getName() : "system";
     }
 
-    // Bulk operations
     @Transactional
     public void deactivateMultipleUsers(java.util.List<Long> userIds) {
         userRepository.findAllById(userIds).forEach(user -> {

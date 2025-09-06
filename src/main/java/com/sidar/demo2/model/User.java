@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users") // "user" PostgreSQL'de reserved keyword olduğu için
+@Table(name = "users")
 public class User implements UserDetails {
 
     @Id
@@ -52,13 +52,11 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean active = true;
 
-    // UserDetails implementasyonu
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String roleName = "ROLE_" + role.name();
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleName);
 
-        // Debug için log ekleyelim
         log.debug("User {} authorities: [{}]", username, roleName);
 
         return List.of(authority);

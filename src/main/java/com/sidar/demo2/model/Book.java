@@ -13,7 +13,7 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;   // Kitap adı
-    private String author;  // Yazar
-    private int year;       // Basım yılı
+    private String title;
+    private String author;
+    private int year;
 }

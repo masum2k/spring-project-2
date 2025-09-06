@@ -28,25 +28,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CORS ayarlarını ekle
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
 
-                // CSRF'yi devre dışı bırak (JWT kullandığımız için)
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - Authentication gerektirmez
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
 
-                        // OPTIONS requests için (preflight)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Book endpoints - GET tüm authenticated user'lar için
                         .requestMatchers(HttpMethod.GET, "/api/books/**")
                         .hasAnyRole("USER", "LIBRARIAN", "ADMIN", "SUPER_ADMIN")
 
-                        // Book CRUD operations - sadece yetkili kullanıcılar
                         .requestMatchers(HttpMethod.POST, "/api/books/**")
                         .hasAnyRole("LIBRARIAN", "ADMIN", "SUPER_ADMIN")
 
@@ -56,11 +50,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/books/**")
                         .hasAnyRole("LIBRARIAN", "ADMIN", "SUPER_ADMIN")
 
-                        // Admin endpoints - ADMIN ve SUPER_ADMIN erişebilir
                         .requestMatchers("/api/admin/**")
                         .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                        // Diğer tüm endpoint'ler authentication gerektirir
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

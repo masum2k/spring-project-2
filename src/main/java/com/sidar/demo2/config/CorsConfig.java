@@ -17,20 +17,17 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // React uygulamanızın çalıştığı portları ekleyin
         configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:3000",  // React default port
-                "http://localhost:3001",  // Alternative React port
+                "http://localhost:3000",
+                "http://localhost:3001",
                 "http://127.0.0.1:3000",
                 "http://127.0.0.1:3001"
         ));
 
-        // İzin verilen HTTP metodları
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"
         ));
 
-        // İzin verilen header'lar
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -42,13 +39,10 @@ public class CorsConfig {
                 "Access-Control-Request-Headers"
         ));
 
-        // Credentials (cookies, authorization headers) göndermeye izin ver
         configuration.setAllowCredentials(true);
 
-        // Preflight cache süresi (dakika)
         configuration.setMaxAge(3600L);
 
-        // Exposed headers (frontend'in okuyabileceği header'lar)
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Disposition"

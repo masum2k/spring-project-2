@@ -38,14 +38,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         log.debug("Processing request: {} {}", method, requestURI);
 
-        // OPTIONS isteği (preflight) - direkt geçir
         if (HttpMethod.OPTIONS.matches(method)) {
             log.debug("OPTIONS request, skipping JWT validation");
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Public endpoint kontrolü - Token gerektirmez
         if (requestURI.startsWith("/api/auth/")) {
             log.debug("Public endpoint accessed: {}", requestURI);
             filterChain.doFilter(request, response);
@@ -56,7 +54,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
-        // Bearer token kontrolü
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.debug("No Bearer token found for protected endpoint: {}", requestURI);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -66,23 +63,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // "Bearer " kısmını çıkar, sadece token'ı al
         jwt = authHeader.substring(7);
         log.debug("JWT token extracted, length: {}", jwt.length());
 
         try {
-            // Token'dan username çıkar
             username = jwtUtil.extractUsername(jwt);
             log.debug("Username extracted from token: {}", username);
 
-            // Username varsa ve daha önce authenticate olmamışsa
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // User details yükle
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 log.debug("UserDetails loaded for user: {}, authorities: {}",
                         username, userDetails.getAuthorities());
 
-                // Token geçerliyse authentication'ı context'e ekle
                 if (jwtUtil.validateToken(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,

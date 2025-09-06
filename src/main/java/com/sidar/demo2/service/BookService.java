@@ -22,17 +22,14 @@ public class BookService {
         return bookRepository.findAll(pageable);
     }
 
-    // YENİ EKLE
     public Book addBook(Book book) {
         return bookRepository.save(book);
     }
 
-    // ID İLE BUL
     public Optional<Book> getBookById(Long id) {
         return bookRepository.findById(id);
     }
 
-    // GÜNCELLE
     public Book updateBook(Long id, Book newBook) {
         return bookRepository.findById(id).map(book -> {
             book.setTitle(newBook.getTitle());
@@ -42,7 +39,6 @@ public class BookService {
         }).orElseThrow(() -> new BookNotFoundException(id));
     }
 
-    // SİL
     public void deleteBook(Long id) {
         if (!bookRepository.existsById(id)) {
             throw new BookNotFoundException(id);

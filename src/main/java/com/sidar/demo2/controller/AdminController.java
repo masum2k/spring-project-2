@@ -25,7 +25,6 @@ public class AdminController {
     private final UserService userService;
     private final BookService bookService;
 
-    // Test endpoint - hangi yetkilerle erişildiğini görmek için
     @GetMapping("/test")
     public ResponseEntity<Map<String, Object>> test() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -39,7 +38,6 @@ public class AdminController {
         ));
     }
 
-    // Kullanıcı rolü değiştir (Sadece SUPER_ADMIN yapabilir)
     @PutMapping("/users/{userId}/role")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Map<String, String>> changeUserRole(
@@ -58,7 +56,6 @@ public class AdminController {
         ));
     }
 
-    // Tüm kullanıcıları listele
     @GetMapping("/users")
     public ResponseEntity<Page<UserDto>> getAllUsers(Pageable pageable) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -68,7 +65,6 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
-    // Role göre kullanıcıları getir
     @GetMapping("/users/by-role")
     public ResponseEntity<Page<UserDto>> getUsersByRole(@RequestParam Role role, Pageable pageable) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -78,7 +74,6 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
-    // Kullanıcı durumunu değiştir (aktif/pasif)
     @PutMapping("/users/{userId}/status")
     public ResponseEntity<Map<String, String>> changeUserStatus(
             @PathVariable Long userId,
@@ -96,18 +91,15 @@ public class AdminController {
         ));
     }
 
-    // Kullanıcı arama
     @GetMapping("/users/search")
     public ResponseEntity<UserDto> searchUser(@RequestParam String query) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             log.info("User search request by: {}, query: {}", auth.getName(), query);
 
-            // Email ile ara
             if (query.contains("@")) {
                 return ResponseEntity.ok(userService.findByEmail(query));
             }
-            // Username ile ara
             return ResponseEntity.ok(userService.findByUsername(query));
         } catch (RuntimeException e) {
             log.warn("User not found for query: {}", query);
@@ -115,7 +107,6 @@ public class AdminController {
         }
     }
 
-    // Sistem istatistikleri
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getSystemStats() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -132,7 +123,6 @@ public class AdminController {
         return ResponseEntity.ok(stats);
     }
 
-    // Hızlı admin promosyonu
     @PutMapping("/promote-to-admin/{userId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Map<String, String>> promoteToAdmin(@PathVariable Long userId) {
@@ -146,7 +136,6 @@ public class AdminController {
         ));
     }
 
-    // Bulk işlemler
     @PostMapping("/users/bulk-deactivate")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Map<String, String>> bulkDeactivate(@RequestBody java.util.List<Long> userIds) {

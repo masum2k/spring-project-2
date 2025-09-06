@@ -18,6 +18,7 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOriginPatterns(Arrays.asList(
+                "https://library-project-delta-three.vercel.app/",
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "http://127.0.0.1:3000",

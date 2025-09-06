@@ -31,7 +31,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Books - Hiyerarşik yetkilendirme
+                        // 🎯 GEÇİCİ ÇÖZÜBirilirli rolleri açıkça belirt
                         .requestMatchers(HttpMethod.GET, "/api/books/**")
                         .hasAnyRole("USER", "LIBRARIAN", "ADMIN", "SUPER_ADMIN")
 
@@ -44,9 +44,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/books/**")
                         .hasAnyRole("LIBRARIAN", "ADMIN", "SUPER_ADMIN")
 
-                        // Admin endpoints - Sadece admin ve üstü
+                        // Admin endpoints - SUPER_ADMIN'i de ekle!
                         .requestMatchers("/api/admin/**")
-                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN") // ✅ Burada SUPER_ADMIN eklendi
 
                         .anyRequest().authenticated()
                 )

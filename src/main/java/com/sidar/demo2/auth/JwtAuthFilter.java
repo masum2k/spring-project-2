@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -30,38 +32,44 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Authorization header'ından JWT token'ı al
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
         final String requestURI = request.getRequestURI();
 
+        log.debug("Processing request: {} {}", request.getMethod(), requestURI);
+
         // Public endpoint kontrolü - Token gerektirmez
         if (requestURI.startsWith("/api/auth/")) {
+            log.debug("Public endpoint accessed: {}", requestURI);
             filterChain.doFilter(request, response);
             return;
         }
 
         // Bearer token kontrolü
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // Token yoksa tüm protected endpoint'ler için 401 döndür
+            log.debug("No Bearer token found for protected endpoint: {}", requestURI);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Authentication required\"}");
-            return; // ✅ Burada dur - filterChain.doFilter() çağırma!
+            response.getWriter().write("{\"error\": \"Authentication required\", \"path\": \"" + requestURI + "\"}");
+            return;
         }
 
         // "Bearer " kısmını çıkar, sadece token'ı al
         jwt = authHeader.substring(7);
+        log.debug("JWT token extracted, length: {}", jwt.length());
 
         try {
             // Token'dan username çıkar
             username = jwtUtil.extractUsername(jwt);
+            log.debug("Username extracted from token: {}", username);
 
             // Username varsa ve daha önce authenticate olmamışsa
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // User details yükle
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                log.debug("UserDetails loaded for user: {}, authorities: {}",
+                        username, userDetails.getAuthorities());
 
                 // Token geçerliyse authentication'ı context'e ekle
                 if (jwtUtil.validateToken(jwt, userDetails)) {
@@ -72,8 +80,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    log.debug("Authentication set in SecurityContext for user: {} with authorities: {}",
+                            username, userDetails.getAuthorities());
                 } else {
-                    // Token geçersizse 401 döndür
+                    log.warn("Invalid token for user: {}", username);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"error\": \"Invalid token\"}");
@@ -81,11 +92,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // Token parse edilemezse 401 döndür
-            logger.error("Cannot set user authentication: {}", e);
+            log.error("Cannot set user authentication: ", e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Authentication failed\"}");
+            response.getWriter().write("{\"error\": \"Authentication failed: " + e.getMessage() + "\"}");
             return;
         }
 

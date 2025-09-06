@@ -2,6 +2,7 @@ package com.sidar.demo2.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @Entity
 @Data
 @NoArgsConstructor
@@ -53,7 +55,13 @@ public class User implements UserDetails {
     // UserDetails implementasyonu
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        String roleName = "ROLE_" + role.name();
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleName);
+
+        // Debug için log ekleyelim
+        log.debug("User {} authorities: [{}]", username, roleName);
+
+        return List.of(authority);
     }
 
     @Override
@@ -73,6 +81,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 }

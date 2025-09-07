@@ -19,6 +19,7 @@ public class CorsConfig {
 
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "https://library-management-spring-react-1pi.vercel.app",
+                "https://spring-project-2-production.up.railway.app",
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "http://127.0.0.1:3000",
